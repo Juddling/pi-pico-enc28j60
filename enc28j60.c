@@ -129,7 +129,7 @@ void enc28j60WriteBuffer(uint16_t len, uint8_t *data)
 	// 	}
 	// 	spi_write_blocking(spi_default, &data[i], 1);
 	// }
-	spi_write_blocking(spi_default, data, len > 300 ? 330 : len);
+	spi_write_blocking(spi_default, data, len);
 
 	cs_deselect();
 }
