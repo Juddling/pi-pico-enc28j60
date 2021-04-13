@@ -6,7 +6,7 @@
 #include "lwip/dhcp.h"
 #include "lwip/timeouts.h"
 #include "netif/etharp.h"
-#include <string.h> 
+#include <string.h>
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
@@ -17,14 +17,14 @@
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
 #define SPI_PORT spi0
 #define PIN_MISO 16
-#define PIN_CS   17
-#define PIN_SCK  18
+#define PIN_CS 17
+#define PIN_SCK 18
 #define PIN_MOSI 19
 
 // based on example from: https://www.nongnu.org/lwip/2_0_x/group__lwip__nosys.html
 #define ETHERNET_MTU 1500
 
-uint8_t mac[6] = { 0xAA, 0x6F, 0x77, 0x47, 0x75, 0x8C };
+uint8_t mac[6] = {0xAA, 0x6F, 0x77, 0x47, 0x75, 0x8C};
 
 static err_t netif_output(struct netif *netif, struct pbuf *p)
 {
@@ -39,13 +39,15 @@ static err_t netif_output(struct netif *netif, struct pbuf *p)
     // pbuf_free(p);
 
     // error sending
-    if (enc28j60Read(ESTAT) & ESTAT_TXABRT) {
-        // a seven-byte transmit status vector will be 
+    if (enc28j60Read(ESTAT) & ESTAT_TXABRT)
+    {
+        // a seven-byte transmit status vector will be
         // written to the location pointed to by ETXND + 1,
         printf("ERR - transmit aborted\n");
     }
 
-    if (enc28j60Read(EIR) & EIR_TXERIF) {
+    if (enc28j60Read(EIR) & EIR_TXERIF)
+    {
         printf("ERR - transmit interrupt flag set\n");
     }
 
@@ -76,10 +78,10 @@ void main(void)
     stdio_init_all();
 
     // data sheet up to 20 mhz
-    spi_init(SPI_PORT, 1*1000*1000);
+    spi_init(SPI_PORT, 1 * 1000 * 1000);
     gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
-    gpio_set_function(PIN_CS,   GPIO_FUNC_SIO);
-    gpio_set_function(PIN_SCK,  GPIO_FUNC_SPI);
+    gpio_set_function(PIN_CS, GPIO_FUNC_SIO);
+    gpio_set_function(PIN_SCK, GPIO_FUNC_SPI);
     gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
 
     // Chip select is active-low, so we'll initialise it to a driven-high state
@@ -88,7 +90,8 @@ void main(void)
 
     // END PICO INIT
 
-    for (int i = 10; i > 0; i--) {
+    for (int i = 10; i > 0; i--)
+    {
         printf("Sleeping for %d seconds...\n", i);
         sleep_ms(1000);
     }
@@ -122,13 +125,16 @@ void main(void)
     while (1)
     {
         uint16_t packet_len = enc28j60PacketReceive(ETHERNET_MTU, (uint8_t *)eth_pkt);
-        if (packet_len) {
+        if (packet_len)
+        {
             printf("enc: Received packet of length = %d\n", packet_len);
             p = pbuf_alloc(PBUF_RAW, packet_len, PBUF_POOL);
             pbuf_take(p, eth_pkt, packet_len);
             free(eth_pkt);
             eth_pkt = malloc(ETHERNET_MTU);
-        } else {
+        }
+        else
+        {
             // printf("enc: no packet received\n");
         }
 
