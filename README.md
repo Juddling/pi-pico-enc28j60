@@ -9,8 +9,12 @@ Code to interact with the ethernet module was adapted from an @turicas's [Arduin
 
 ![Image of Pico responding to ping over local IP address](/pico-ping.png)
 
+# Wiring Diagram
+
+![Wiring Diagram](/pi-pico-enc28j60-wiring.svg)
+
 # Future Improvements
 
-- [ ] diagram of wiring
+- [x] diagram of wiring
 - [ ] format code
 - [ ] get DHCP discovery working
