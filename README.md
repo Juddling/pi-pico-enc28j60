@@ -13,6 +13,8 @@ Code to interact with the ethernet module was adapted from an @turicas's [Arduin
 
 ![Wiring Diagram](/pi-pico-enc28j60-wiring.svg)
 
+Thank you to [@tobiasvogel](https://github.com/tobiasvogel) for providing the wiring diagram
+
 # Future Improvements
 
 - [x] diagram of wiring
