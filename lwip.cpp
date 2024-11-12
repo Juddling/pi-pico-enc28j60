@@ -6,11 +6,14 @@
 #include "lwip/dhcp.h"
 #include "lwip/timeouts.h"
 #include "netif/etharp.h"
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
+#include <cstddef>
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
+extern "C"{
 #include "enc28j60.h"
+}
 
 // SPI Defines
 // We are going to use SPI 0, and allocate it to the following GPIO pins
@@ -62,6 +65,7 @@ static void netif_status_callback(struct netif *netif)
 
 static err_t netif_initialize(struct netif *netif)
 {
+    enc28j60Init(mac);
     netif->linkoutput = netif_output;
     netif->output = etharp_output;
     // netif->output_ip6 = ethip6_output;
@@ -73,12 +77,14 @@ static err_t netif_initialize(struct netif *netif)
     return ERR_OK;
 }
 
-void main(void)
+
+
+int main(void)
 {
     stdio_init_all();
 
     // data sheet up to 20 mhz
-    spi_init(SPI_PORT, 1 * 1000 * 1000);
+    spi_init(SPI_PORT, 20*1000*1000);
     gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
     gpio_set_function(PIN_CS, GPIO_FUNC_SIO);
     gpio_set_function(PIN_SCK, GPIO_FUNC_SPI);
@@ -97,14 +103,14 @@ void main(void)
     }
 
     ip_addr_t addr, mask, static_ip;
-    IP4_ADDR(&static_ip, 192, 168, 1, 111);
+    IP4_ADDR(&static_ip, 192, 168, 20, 111);
     IP4_ADDR(&mask, 255, 255, 255, 0);
-    IP4_ADDR(&addr, 192, 168, 1, 1);
+    IP4_ADDR(&addr, 192, 168, 20, 1);
 
     struct netif netif;
     lwip_init();
     // IP4_ADDR_ANY if using DHCP client
-    netif_add(&netif, &static_ip, &mask, &addr, NULL, netif_initialize, netif_input);
+    netif_add(&netif, IP4_ADDR_ANY,IP4_ADDR_ANY,IP4_ADDR_ANY, NULL, netif_initialize, netif_input);
     netif.name[0] = 'e';
     netif.name[1] = '0';
     // netif_create_ip6_linklocal_address(&netif, 1);
@@ -113,14 +119,19 @@ void main(void)
     netif_set_default(&netif);
     netif_set_up(&netif);
 
-    dhcp_inform(&netif);
-    // dhcp_start(&netif);
+    //dhcp_inform(&netif);
+    dhcp_start(&netif);
 
-    enc28j60Init(mac);
-    uint8_t *eth_pkt = malloc(ETHERNET_MTU);
+    std::byte eth_pkt[ETHERNET_MTU];
     struct pbuf *p = NULL;
 
     netif_set_link_up(&netif);
+
+/*
+    struct tcp_pcb * pcb=tcp_new();
+    tcp_bind(pcb,&static_ip,1234);
+    pcb=tcp_listen(pcb);
+*/
 
     while (1)
     {
@@ -130,8 +141,8 @@ void main(void)
             printf("enc: Received packet of length = %d\n", packet_len);
             p = pbuf_alloc(PBUF_RAW, packet_len, PBUF_POOL);
             pbuf_take(p, eth_pkt, packet_len);
-            free(eth_pkt);
-            eth_pkt = malloc(ETHERNET_MTU);
+            //free(eth_pkt);
+            //eth_pkt = malloc(ETHERNET_MTU);
         }
         else
         {
@@ -152,6 +163,7 @@ void main(void)
         sys_check_timeouts();
 
         /* your application goes here */
-        sleep_ms(100);
+        sleep_ms(5);
+        //if(netif.dhcp->state==DHCP_BOUND) printf("dhcp bound.");
     }
 }
